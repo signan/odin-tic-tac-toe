@@ -1,12 +1,23 @@
 const Gameboard = (() => {
-    let gameboard = [0, 'X', 'X', 3, 4, 'O', 'O', 'X', 8]
-
+    let gameboard = ['-', 'X', 'X', '-', '-', 'O', 'O', 'X', '-']
+    const setValue = (index, value) => {
+        gameboard[index] = value;
+    };
     const getGameboard = () => gameboard;
-    return {getGameboard};
+    return {getGameboard, setValue};
 })();
+
+const Player = (name, mark) => {
+    const getName = () => name;
+    const getMark = () => mark;
+    return {getName, getMark};
+}
 
 
 const displayController = (() => {
+    let player = Player('human', 'X')
+    let computer = Player('cpu', 'O')
+
     let gameboardDiv = document.querySelector('#gameboard');
     const renderGameboard = () => {
         clearCells();
@@ -17,31 +28,35 @@ const displayController = (() => {
         let gameboardArray = Gameboard.getGameboard();
         for (let i = 0; i < gameboardArray.length; i++) {
             let cell = document.createElement('div');
+            cell.setAttribute('data-cell', i);
             cell.classList.add('cell');
-            if (!isNaN(gameboardArray[i])) {
-                cell.textContent = '-';
+
+            if (gameboardArray[i] === '-') {
+                cell.addEventListener('click', addMark)
             }
-            else {
-                cell.textContent = gameboardArray[i];
-            }
+
+            cell.textContent = gameboardArray[i];
+            
             gameboardDiv.appendChild(cell);
         }
-    }
+    };
 
     const clearCells = () => {
         while (gameboardDiv.firstChild) {
             gameboardDiv.removeChild(gameboardDiv.lastChild);
           }
-    }
+    };
+
+    const addMark = () => {
+        let cellIndex = event.currentTarget.getAttribute('data-cell');
+        Gameboard.setValue(cellIndex, player.getMark());
+        console.log(player.getMark());
+        renderGameboard()
+    };
 
     return {renderGameboard};
 })();
 
 
-const Player = (name, mark) => {
-    const getName = () => name;
-    const getMark = () => mark;
-    return {getName, getMark};
-}
 
 displayController.renderGameboard();

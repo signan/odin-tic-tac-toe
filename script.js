@@ -17,12 +17,13 @@ const Player = (name, mark) => {
 const displayController = (() => {
     let player = Player('human', 'X')
     let computer = Player('cpu', 'O')
+    let winner = null;
 
     let gameboardDiv = document.querySelector('#gameboard');
     const renderGameboard = () => {
         clearCells();
         drawCells();
-    }
+    };
 
     const drawCells = () => {
         let gameboardArray = Gameboard.getGameboard();
@@ -50,10 +51,55 @@ const displayController = (() => {
     const addMark = () => {
         let cellIndex = event.currentTarget.getAttribute('data-cell');
         Gameboard.setValue(cellIndex, player.getMark());
-        console.log(player.getMark());
-        renderGameboard()
+        renderGameboard();
+        console.log(`is the game over? ${isGameover()}. winner is ${winner}`);
     };
 
+    const isGameover = () => {
+        checkWinner(player);
+        checkWinner(computer);
+        return Boolean(winner) || boardIsFull();
+    };
+
+    const boardIsFull = () => {
+        // check if the game doesn't include a '-'. if it does, it means that there are still spaces left in the board
+        return !Gameboard.getGameboard().includes('-');
+    };
+
+    const checkWinner = (player) => {
+        // checks if the given player won
+        if (checkVertical(player) || checkHorizontal(player) || checkDiagonal (player)) {
+            winner = player.getName();
+        }
+    };
+
+    const checkVertical = (player) => {
+        // return true if the player won on vertical placement
+        let gb = Gameboard.getGameboard();
+        let mark = player.getMark();
+        return (gb[0] === mark && gb[3] === mark && gb[6] === mark) ||
+                (gb[1] === mark && gb[4] === mark && gb[7] === mark) ||
+                (gb[2] === mark && gb[5] === mark && gb[8] === mark)
+    };
+
+    const checkHorizontal = (player) => {
+        // return true if the player won on horizontal placement
+        let gb = Gameboard.getGameboard();
+        let mark = player.getMark();
+        return (gb[0] === mark && gb[1] === mark && gb[2] === mark) ||
+                (gb[3] === mark && gb[4] === mark && gb[5] === mark) ||
+                (gb[6] === mark && gb[7] === mark && gb[8] === mark)
+    };
+
+    const checkDiagonal = (player) => {
+        // return true if the player won on diagonal placement
+        let gb = Gameboard.getGameboard();
+        let mark = player.getMark();
+        return (gb[0] === mark && gb[4] === mark && gb[8] === mark) ||
+                (gb[2] === mark && gb[4] === mark && gb[6] === mark)
+    };
+
+    
     return {renderGameboard};
 })();
 

@@ -53,6 +53,17 @@ const displayController = (() => {
         Gameboard.setValue(cellIndex, player.getMark());
         renderGameboard();
         console.log(`is the game over? ${isGameover()}. winner is ${winner}`);
+        computerPlay();
+    };
+
+    const computerPlay = () => {
+        let gb = Gameboard.getGameboard();
+        let availableSpaces = [];
+        for (let i = 0; i < gb.length; i++) {
+            if (gb[i] === '-') availableSpaces.push(i);
+        }
+        
+        return randomChoice = availableSpaces[Math.floor(Math.random() * availableSpaces.length)];
     };
 
     const isGameover = () => {

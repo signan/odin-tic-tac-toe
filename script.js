@@ -78,10 +78,10 @@ const displayController = (() => {
     const isGameover = () => {
         checkWinner(player);
         checkWinner(computer);
-        return Boolean(winner) || boardIsFull();
+        return Boolean(winner) || isDraw();
     };
 
-    const boardIsFull = () => {
+    const isDraw = () => {
         // check if the game doesn't include a '-'. if it does, it means that there are still spaces left in the board
         return !Gameboard.getGameboard().includes('-');
     };
@@ -119,6 +119,7 @@ const displayController = (() => {
                 (gb[2] === mark && gb[4] === mark && gb[6] === mark)
     };
 
+    
     
     return {renderGameboard};
 })();

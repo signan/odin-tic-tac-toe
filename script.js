@@ -1,10 +1,15 @@
 const Gameboard = (() => {
-    let gameboard = ['-', 'X', 'X', '-', '-', 'O', 'O', 'X', '-']
+    let gameboard = ['-', '-', '-', '-', '-', '-', '-', '-', '-']
     const setValue = (index, value) => {
         gameboard[index] = value;
     };
+
+    // if gameboard has '-', it means that there are still spaces left in the board and therefore, not full
+    const isFull = () => {
+        return !gameboard.includes('-')
+    };
     const getGameboard = () => gameboard;
-    return {getGameboard, setValue};
+    return {getGameboard, setValue, isFull};
 })();
 
 const Player = (name, mark) => {
@@ -33,7 +38,7 @@ const displayController = (() => {
             cell.classList.add('cell');
 
             if (gameboardArray[i] === '-') {
-                cell.addEventListener('click', userPlay)
+                cell.addEventListener('click', playRound)
             }
 
             cell.textContent = gameboardArray[i];
@@ -51,13 +56,10 @@ const displayController = (() => {
     const addMark = (player, space) => {
         Gameboard.setValue(space, player.getMark());
         renderGameboard();
-        console.log(`is the game over? ${isGameover()}. winner is ${winner}`);
     };
 
-    const userPlay = () => {
-        let spaceIndex = event.currentTarget.getAttribute('data-cell');
-        addMark(player, spaceIndex);
-        computerPlay();
+    const userPlay = (index) => {
+        addMark(player, index);
     };
 
     const computerPlay = () => {
@@ -78,12 +80,20 @@ const displayController = (() => {
     const isGameover = () => {
         checkWinner(player);
         checkWinner(computer);
-        return Boolean(winner) || isDraw();
+        if (Boolean(winner)) {
+            console.log(`the winner is ${winner}`);
+            return true;
+        }
+
+        if (isDraw()) {
+            console.log('the game is a draw');
+            return true;
+        }
     };
 
     const isDraw = () => {
-        // check if the game doesn't include a '-'. if it does, it means that there are still spaces left in the board
-        return !Gameboard.getGameboard().includes('-');
+        // return true if there are no spaces left in the board.
+        return Gameboard.isFull();
     };
 
     const checkWinner = (player) => {
@@ -119,7 +129,19 @@ const displayController = (() => {
                 (gb[2] === mark && gb[4] === mark && gb[6] === mark)
     };
 
-    
+    const playRound = () => {
+        // if the game isn't over (tie or no winner), make the user play
+        if (!isGameover()) {
+            let spaceIndex = event.currentTarget.getAttribute('data-cell');
+            userPlay(spaceIndex);
+        }
+
+        // if the game still isn't over , make the computer play
+        if (!isGameover()) {
+            computerPlay();
+            isGameover();
+        }
+    };
     
     return {renderGameboard};
 })();

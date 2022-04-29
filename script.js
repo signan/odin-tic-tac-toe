@@ -33,7 +33,7 @@ const displayController = (() => {
             cell.classList.add('cell');
 
             if (gameboardArray[i] === '-') {
-                cell.addEventListener('click', addMark)
+                cell.addEventListener('click', userPlay)
             }
 
             cell.textContent = gameboardArray[i];
@@ -48,15 +48,24 @@ const displayController = (() => {
           }
     };
 
-    const addMark = () => {
-        let cellIndex = event.currentTarget.getAttribute('data-cell');
-        Gameboard.setValue(cellIndex, player.getMark());
+    const addMark = (player, space) => {
+        Gameboard.setValue(space, player.getMark());
         renderGameboard();
         console.log(`is the game over? ${isGameover()}. winner is ${winner}`);
+    };
+
+    const userPlay = () => {
+        let spaceIndex = event.currentTarget.getAttribute('data-cell');
+        addMark(player, spaceIndex);
         computerPlay();
     };
 
     const computerPlay = () => {
+        let spaceIndex = pickRandomSpace()
+        addMark(computer, spaceIndex);
+    };
+
+    const pickRandomSpace = () => {
         let gb = Gameboard.getGameboard();
         let availableSpaces = [];
         for (let i = 0; i < gb.length; i++) {

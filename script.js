@@ -1,30 +1,48 @@
 const Gameboard = (() => {
     let gameboard = ['-', '-', '-', '-', '-', '-', '-', '-', '-']
+
     const setValue = (index, value) => {
         gameboard[index] = value;
     };
 
-    // if gameboard has '-', it means that there are still spaces left in the board and therefore, not full
     const isFull = () => {
+        // if gameboard has '-', it means that there are still spaces left in the board and therefore, not full
         return !gameboard.includes('-')
     };
+
     const getGameboard = () => gameboard;
-    return {getGameboard, setValue, isFull};
+
+    const resetBoard = () => {
+        gameboard = ['-', '-', '-', '-', '-', '-', '-', '-', '-'];
+    };
+
+
+    return {getGameboard, setValue, isFull, resetBoard};
 })();
 
 const Player = (name, mark) => {
+    let score = 0;
     const getName = () => name;
     const getMark = () => mark;
-    return {getName, getMark};
+    const getScore = () => score;
+    const increamentScore = () => {
+        score += 1;
+    };
+    const resetScore = () => {
+        score = 0;
+    };
+    return {getName, getMark, getScore, increamentScore, resetScore};
 }
 
 
 const displayController = (() => {
     let player = Player('human', 'X')
     let computer = Player('cpu', 'O')
-    let winner = null;
+    let roundWinner = null;
+    let gameWinner = null;
 
     let gameboardDiv = document.querySelector('#gameboard');
+
     const renderGameboard = () => {
         clearCells();
         drawCells();
@@ -40,19 +58,25 @@ const displayController = (() => {
             if (gameboardArray[i] === '-') {
                 cell.addEventListener('click', playRound)
             }
-
+            
             cell.textContent = gameboardArray[i];
             
             gameboardDiv.appendChild(cell);
         }
     };
-
+    
     const clearCells = () => {
         while (gameboardDiv.firstChild) {
             gameboardDiv.removeChild(gameboardDiv.lastChild);
-          }
+        }
     };
-
+    
+    const resetRound = () => {
+        Gameboard.resetBoard();
+        roundWinner = null;
+        renderGameboard();
+    };
+    
     const addMark = (player, space) => {
         Gameboard.setValue(space, player.getMark());
         renderGameboard();
@@ -78,10 +102,10 @@ const displayController = (() => {
     };
 
     const isGameover = () => {
-        checkWinner(player);
-        checkWinner(computer);
-        if (Boolean(winner)) {
-            console.log(`the winner is ${winner}`);
+        checkRoundWinner(player);
+        checkRoundWinner(computer);
+        if (Boolean(roundWinner)) {
+            console.log(`the winner is ${roundWinner}`);
             return true;
         }
 
@@ -96,10 +120,19 @@ const displayController = (() => {
         return Gameboard.isFull();
     };
 
-    const checkWinner = (player) => {
+    const checkGameWinner = (player) => {
+        if (player.getScore === 3) {
+            gameWinner = player.getName();
+            console.log(`game winner is ${gameWinner}`);
+        }
+    };
+
+    const checkRoundWinner = (player) => {
         // checks if the given player won
         if (checkVertical(player) || checkHorizontal(player) || checkDiagonal (player)) {
-            winner = player.getName();
+            player.increamentScore();
+            roundWinner = player.getName();
+            checkGameWinner(player);
         }
     };
 
@@ -130,18 +163,28 @@ const displayController = (() => {
     };
 
     const playRound = () => {
-        // if the game isn't over (tie or no winner), make the user play
+        if (gameWinner) {
+            console.log("game won by " + gameWinner);
+        }
+
         if (!isGameover()) {
+             // if the game isn't over (no tie or no winner), make the user play
             let spaceIndex = event.currentTarget.getAttribute('data-cell');
             userPlay(spaceIndex);
         }
+        else {
+            // to stop the second condition from executing
+            return;
+        }
 
-        // if the game still isn't over , make the computer play
         if (!isGameover()) {
+            // if the game still isn't over , make the computer play
             computerPlay();
             isGameover();
         }
+        resetRound();
     };
+
     
     return {renderGameboard};
 })();

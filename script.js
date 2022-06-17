@@ -42,6 +42,7 @@ const displayController = (() => {
     let gameWinner = null;
 
     let gameboardDiv = document.querySelector('#gameboard');
+    let logDiv = document.querySelector('#log')
 
     const renderGameboard = () => {
         clearCells();
@@ -56,7 +57,7 @@ const displayController = (() => {
             cell.classList.add('cell');
 
             if (gameboardArray[i] === '-') {
-                cell.addEventListener('click', playRound)
+                cell.addEventListener('click', playTurn)
             }
             
             cell.textContent = gameboardArray[i];
@@ -73,8 +74,12 @@ const displayController = (() => {
     
     const resetRound = () => {
         Gameboard.resetBoard();
-        roundWinner = null;
         renderGameboard();
+    };
+
+    const restartGame = () => {
+        gameWinner = null;
+        resetRound();
     };
     
     const addMark = (player, space) => {
@@ -82,8 +87,8 @@ const displayController = (() => {
         renderGameboard();
     };
 
-    const userPlay = (index) => {
-        addMark(player, index);
+    const userPlay = (spaceIndex) => {
+        addMark(player, spaceIndex);
     };
 
     const computerPlay = () => {
@@ -121,18 +126,19 @@ const displayController = (() => {
     };
 
     const checkGameWinner = (player) => {
-        if (player.getScore === 3) {
+        if (player.getScore() === 3) {
             gameWinner = player.getName();
-            console.log(`game winner is ${gameWinner}`);
+            gameWinnerScreen(player);
         }
     };
 
-    const checkRoundWinner = (player) => {
+    const checkRoundWinner = (playerToCheck) => {
         // checks if the given player won
-        if (checkVertical(player) || checkHorizontal(player) || checkDiagonal (player)) {
-            player.increamentScore();
-            roundWinner = player.getName();
-            checkGameWinner(player);
+        if (checkVertical(playerToCheck) || checkHorizontal(playerToCheck) || checkDiagonal (playerToCheck)) {
+            playerToCheck.increamentScore();
+            addToLog(`${playerToCheck.getName()}: ${player.getScore()} - ${computer.getScore()}`)
+            checkGameWinner(playerToCheck);
+            resetRound()
         }
     };
 
@@ -162,27 +168,36 @@ const displayController = (() => {
                 (gb[2] === mark && gb[4] === mark && gb[6] === mark)
     };
 
-    const playRound = () => {
-        if (gameWinner) {
-            console.log("game won by " + gameWinner);
-        }
+    const addToLog = (massege) => {
+        let h3 = document.createElement('h3');
+        h3.textContent = massege
+        logDiv.appendChild(h3)        
+    };
 
-        if (!isGameover()) {
-             // if the game isn't over (no tie or no winner), make the user play
-            let spaceIndex = event.currentTarget.getAttribute('data-cell');
-            userPlay(spaceIndex);
-        }
-        else {
-            // to stop the second condition from executing
-            return;
-        }
+    const gameWinnerScreen = (winner) => {
+        let winningScreen = document.createElement('div');
+        winningScreen.setAttribute('id', 'overlay')
+        let massege = document.createElement('h1');
+        massege.textContent = `${winner.getName()} won the game with a score of ${player.getScore()} - ${computer.getScore()}`;
+        let restartButton = document.createElement('button');
+        restartButton.addEventListener('click', restartGame);
+        restartButton.textContent = 'Restart Game?'
+        winningScreen.appendChild(massege);
+        winningScreen.appendChild(restartButton);
+        logDiv.appendChild(winningScreen);
 
-        if (!isGameover()) {
-            // if the game still isn't over , make the computer play
-            computerPlay();
-            isGameover();
+    };
+
+    const playTurn = () => {
+        let spaceIndex = event.currentTarget.getAttribute('data-cell');
+        userPlay(spaceIndex);
+        checkRoundWinner(player)
+        computerPlay();
+        checkRoundWinner(computer)
+        if (Gameboard.isFull()) {
+            addToLog('DRAW!! Resetting board...')
+            resetRound();
         }
-        resetRound();
     };
 
     
